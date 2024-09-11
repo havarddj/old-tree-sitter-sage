@@ -60,13 +60,13 @@ module.exports = grammar({
     ],
 
     supertypes: $ => [
+	$._sage_statement
 	$._simple_statement,
 	$._compound_statement,
 	$.expression,
 	$.primary_expression,
 	$.pattern,
 	$.parameter,
-	$._sage_statement
     ],
 
     externals: $ => [
@@ -108,11 +108,17 @@ module.exports = grammar({
 	module: $ => repeat($._statement),
 
 	_statement: $ => choice(
+	    $._sage_statement,
 	    $._simple_statements,
 	    $._compound_statement,
-	    $._sage_statement,
 	),
 
+	// Sage statements
+	_sage_statement: $ => choice(
+	    $.sage_symb_assignment,
+	    $.sage_gen_assignment,
+	),
+	
 	// Simple statements
 
 	_simple_statements: $ => seq(
@@ -856,6 +862,19 @@ module.exports = grammar({
 		seq(':', field('type', $.type), '=', field('right', $._right_hand_side)),
 	    ),
 	),
+
+	// sage symb assignment
+	sage_symb_assignment: $ => seq(
+	    field('left', $._sage_symb_assign_lhs),
+	    seq('=', field('right', $.expression_statement)),
+	),
+	_sage_symb_assign_lhs: $ => seq(
+	    field('name', $.identifier),
+	    '(',
+	    field('arguments', commaSep1($.identifier)),
+	    ')'
+	)
+	
 	// sage assignments of the form F.<x> = FunctionName()
 	sage_gen_assignment: $ => seq(
 	    field('left', $._sage_gen_assign_lhs),
