@@ -2404,6 +2404,7 @@
           {
             "type": "SYMBOL",
             "name": "false"
+
           },
           {
             "type": "SYMBOL",
@@ -2429,7 +2430,7 @@
                 "members": [
                   {
                     "type": "SYMBOL",
-                    "name": "integer"
+                    "name": "sage_integer"
                   },
                   {
                     "type": "SYMBOL",
@@ -2878,7 +2879,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "integer"
+                "name": "sage_integer"
               },
               {
                 "type": "SYMBOL",
@@ -2904,7 +2905,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "integer"
+                "name": "sage_integer"
               },
               {
                 "type": "SYMBOL",
@@ -3372,7 +3373,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "integer"
+          "name": "sage_integer"
         },
         {
           "type": "SYMBOL",
@@ -5707,7 +5708,7 @@
       "type": "PATTERN",
       "value": "![a-z]"
     },
-    "integer": {
+    "sage_integer": {
       "type": "TOKEN",
       "content": {
         "type": "CHOICE",
