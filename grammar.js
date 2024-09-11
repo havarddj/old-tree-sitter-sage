@@ -34,12 +34,13 @@ const PREC = {
     unary: 20,
     power: 21,
     call: 22,
+    sage: 69,
 };
 
 const SEMICOLON = ';';
 
 module.exports = grammar({
-    name: 'python',
+    name: 'sage',
 
     extras: $ => [
 	$.comment,
@@ -56,11 +57,13 @@ module.exports = grammar({
 	[$.named_expression, $.as_pattern],
 	[$.print_statement, $.primary_expression],
 	[$.type_alias_statement, $.primary_expression],
+        [$._sage_symb_assign_lhs, $.primary_expression],
+        // [$.sage_symb_assignment, $.primary_expression],
 	[$.match_statement, $.primary_expression],
     ],
 
     supertypes: $ => [
-	$._sage_statement
+	// $.sage_statement,
 	$._simple_statement,
 	$._compound_statement,
 	$.expression,
@@ -108,16 +111,10 @@ module.exports = grammar({
 	module: $ => repeat($._statement),
 
 	_statement: $ => choice(
-	    $._sage_statement,
 	    $._simple_statements,
 	    $._compound_statement,
 	),
 
-	// Sage statements
-	_sage_statement: $ => choice(
-	    $.sage_symb_assignment,
-	    $.sage_gen_assignment,
-	),
 	
 	// Simple statements
 
@@ -128,6 +125,7 @@ module.exports = grammar({
 	),
 
 	_simple_statement: $ => choice(
+            $.sage_statement,
 	    $.future_import_statement,
 	    $.import_statement,
 	    $.import_from_statement,
@@ -144,6 +142,20 @@ module.exports = grammar({
 	    $.nonlocal_statement,
 	    $.exec_statement,
 	    $.type_alias_statement,
+	),
+        
+	// Sage statements
+        // sage_statement: $ => choice(
+        //     $.sage_expression,
+        //     $._sage_assignment,
+        // ),
+        sage_statement: $ => $._sage_assignment,
+
+        // sage_expression: $ => $.expression,
+        
+	_sage_assignment: $ => choice(
+	    $.sage_symb_assignment,
+	    $.sage_gen_assignment,
 	),
 
 	import_statement: $ => seq(
@@ -863,27 +875,44 @@ module.exports = grammar({
 	    ),
 	),
 
+        // TODO: this ugly yo
 	// sage symb assignment
-	sage_symb_assignment: $ => seq(
+	sage_symb_assignment: $ =>  seq(
 	    field('left', $._sage_symb_assign_lhs),
-	    seq('=', field('right', $.expression_statement)),
+	    '=',
+            field('right', $.expression_statement),
 	),
+        
 	_sage_symb_assign_lhs: $ => seq(
-	    field('name', $.identifier),
-	    '(',
-	    field('arguments', commaSep1($.identifier)),
-	    ')'
-	)
-	
+            field('name', $.identifier),
+            '(', field('params', commaSep1($.identifier)), ')' 
+	),
+        
+        // sage_symb_assignment: $ => seq(
+        //     $.identifier,
+        //     '(',
+        //     commaSep1($.identifier),
+        //     ')',
+        //     '=',
+        //     $.expression_statement,
+        // ),
+        
 	// sage assignments of the form F.<x> = FunctionName()
 	sage_gen_assignment: $ => seq(
 	    field('left', $._sage_gen_assign_lhs),
-	    seq('=', field('right', $._right_hand_side)),
+	    '=',
+            field('right', $.call),
 	),
+        
 	// matches 1 or more "identifier" separated with ,
-	_sage_gen_assign_lhs: $ => seq(
-	    '.<', commaSep1($.identifier), '>'
+	// sage_gen_assign_lhs: $ => prec(PREC.sage, seq(
+        _sage_gen_assign_lhs: $ => seq(
+	    field('name', $.identifier),
+            '.<',
+            field('gens', commaSep1($.identifier)),
+            '>'
 	),
+
 	
 	augmented_assignment: $ => seq(
 	    field('left', $._left_hand_side),

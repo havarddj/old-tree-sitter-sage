@@ -1,5 +1,5 @@
 {
-  "name": "python",
+  "name": "sage",
   "word": "identifier",
   "rules": {
     "module": {
@@ -73,6 +73,10 @@
       "members": [
         {
           "type": "SYMBOL",
+          "name": "sage_statement"
+        },
+        {
+          "type": "SYMBOL",
           "name": "future_import_statement"
         },
         {
@@ -134,6 +138,23 @@
         {
           "type": "SYMBOL",
           "name": "type_alias_statement"
+        }
+      ]
+    },
+    "sage_statement": {
+      "type": "SYMBOL",
+      "name": "_sage_assignment"
+    },
+    "_sage_assignment": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "sage_symb_assignment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "sage_gen_assignment"
         }
       ]
     },
@@ -2404,7 +2425,6 @@
           {
             "type": "SYMBOL",
             "name": "false"
-
           },
           {
             "type": "SYMBOL",
@@ -2430,7 +2450,7 @@
                 "members": [
                   {
                     "type": "SYMBOL",
-                    "name": "sage_integer"
+                    "name": "integer"
                   },
                   {
                     "type": "SYMBOL",
@@ -2879,7 +2899,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "sage_integer"
+                "name": "integer"
               },
               {
                 "type": "SYMBOL",
@@ -2905,7 +2925,7 @@
             "members": [
               {
                 "type": "SYMBOL",
-                "name": "sage_integer"
+                "name": "integer"
               },
               {
                 "type": "SYMBOL",
@@ -3373,7 +3393,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "sage_integer"
+          "name": "integer"
         },
         {
           "type": "SYMBOL",
@@ -4292,6 +4312,156 @@
               ]
             }
           ]
+        }
+      ]
+    },
+    "sage_symb_assignment": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "left",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_sage_symb_assign_lhs"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "="
+        },
+        {
+          "type": "FIELD",
+          "name": "right",
+          "content": {
+            "type": "SYMBOL",
+            "name": "expression_statement"
+          }
+        }
+      ]
+    },
+    "_sage_symb_assign_lhs": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "("
+        },
+        {
+          "type": "FIELD",
+          "name": "params",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "identifier"
+              },
+              {
+                "type": "REPEAT",
+                "content": {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ","
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "identifier"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ")"
+        }
+      ]
+    },
+    "sage_gen_assignment": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "left",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_sage_gen_assign_lhs"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "="
+        },
+        {
+          "type": "FIELD",
+          "name": "right",
+          "content": {
+            "type": "SYMBOL",
+            "name": "call"
+          }
+        }
+      ]
+    },
+    "_sage_gen_assign_lhs": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ".<"
+        },
+        {
+          "type": "FIELD",
+          "name": "gens",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "identifier"
+              },
+              {
+                "type": "REPEAT",
+                "content": {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ","
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "identifier"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ">"
         }
       ]
     },
@@ -5708,7 +5878,7 @@
       "type": "PATTERN",
       "value": "![a-z]"
     },
-    "sage_integer": {
+    "integer": {
       "type": "TOKEN",
       "content": {
         "type": "CHOICE",
@@ -6229,6 +6399,10 @@
     ],
     [
       "type_alias_statement",
+      "primary_expression"
+    ],
+    [
+      "_sage_symb_assign_lhs",
       "primary_expression"
     ],
     [
