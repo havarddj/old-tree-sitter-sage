@@ -806,9 +806,10 @@ module.exports = grammar({
 		[prec.left, '%', PREC.times],
 		[prec.left, '//', PREC.times],
 		[prec.right, '**', PREC.power],
+		[prec.left, '^', PREC.power],
 		[prec.left, '|', PREC.bitwise_or],
 		[prec.left, '&', PREC.bitwise_and],
-		[prec.left, '^', PREC.xor],
+		[prec.left, '^^', PREC.xor],
 		[prec.left, '<<', PREC.shift],
 		[prec.left, '>>', PREC.shift],
 	    ];
@@ -1208,6 +1209,8 @@ module.exports = grammar({
 		choice(
 		    optional(/[Ll]/), // long numbers
 		    optional(/[jJ]/), // complex numbers
+		    optional(/[r]/), // python literals 
+
 		),
 	    ),
 	)),
