@@ -1226,6 +1226,8 @@ module.exports = grammar({
 		    seq(digits, exponent),
 		),
 		optional(/[jJ]/),
+		optional(/[r]/), // python numbers
+
 	    ));
 	},
 
