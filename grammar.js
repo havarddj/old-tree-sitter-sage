@@ -47,23 +47,24 @@ module.exports = grammar({
 	/[\s\f\uFEFF\u2060\u200B]|\r?\n/,
 	$.line_continuation,
     ],
-
+    // TODO: remove old commented-out code
     conflicts: $ => [
 	[$.primary_expression, $.pattern],
 	[$.primary_expression, $.list_splat_pattern],
 	[$.tuple, $.tuple_pattern],
 	[$.list, $.list_pattern],
 	[$.with_item, $._collection_elements],
+	[$.with_item, $._sage_collection_elements],
+
 	[$.named_expression, $.as_pattern],
 	[$.print_statement, $.primary_expression],
 	[$.type_alias_statement, $.primary_expression],
 	[$.match_statement, $.primary_expression],
-	[$.expression, $.sage_ellipsis_range],
-	[$.expression, $.sage_ellipsis_iter],
+	// [$.expression, $.sage_ellipsis_range],
+	// [$.expression, $.sage_ellipsis_iter],
         [$._sage_symb_assign_lhs, $.primary_expression],
-	[$.sage_ellipsis_range, $.sage_ellipsis_range],
-	[$.sage_ellipsis_iter, $.sage_ellipsis_iter],
-
+	// [$.sage_ellipsis_range, $.sage_ellipsis_range],
+	// [$.sage_ellipsis_iter, $.sage_ellipsis_iter],
     ],
 
     supertypes: $ => [
@@ -155,10 +156,10 @@ module.exports = grammar({
             $._sage_assignment,
         ),
 
-        sage_expression: $ => prec(PREC.sage, choice(
-	    $.sage_ellipsis_iter,
-	    $.sage_ellipsis_range,
-	)),
+        // sage_expression: $ => prec(PREC.sage, choice(
+	//     $.sage_ellipsis_iter,
+	//     $.sage_ellipsis_range,
+	// )),
         
 	_sage_assignment: $ => choice(
 	    $.sage_symb_assignment,
@@ -782,7 +783,7 @@ module.exports = grammar({
 	    $.parenthesized_expression,
 	    $.generator_expression,
 	    $.ellipsis,
-	    $.sage_expression,
+	    // $.sage_expression,
 	    alias($.list_splat_pattern, $.list_splat),
 	),
 
@@ -1042,38 +1043,38 @@ module.exports = grammar({
 
 	list: $ => seq(
 	    '[',
-	    optional($._collection_elements),
+	    optional($._sage_collection_elements),
 	    ']',
 	),
 
-	sage_ellipsis_iter: $ => seq(
-	    '(',
-	    optional(seq(commaSep1($.primary_expression), ',')),
-	    commaSep1(seq(
-		$._sage_ellipsis_expr,
-		optional(seq(',', commaSep1($.primary_expression))
-			)
-	    )),
-	    ')'
-	),
+	// sage_ellipsis_iter: $ => seq(
+	//     '(',
+	//     optional(seq(commaSep1($.primary_expression), ',')),
+	//     commaSep1(seq(
+	// 	$._sage_ellipsis_expr,
+	// 	optional(seq(',', commaSep1($.primary_expression))
+	// 		)
+	//     )),
+	//     ')'
+	// ),
 
-	sage_ellipsis_range: $ => seq(
-	    '[',
-	    optional(seq(commaSep1($.primary_expression), ',')),
-	    commaSep1(seq(
-		$._sage_ellipsis_expr,
-		optional(seq(',', commaSep1($.primary_expression))
-			)
-	    )),
-	    ']'
-	),
+	// sage_ellipsis_range: $ => seq(
+	//     '[',
+	//     optional(seq(commaSep1($.primary_expression), ',')),
+	//     commaSep1(seq(
+	// 	$._sage_ellipsis_expr,
+	// 	optional(seq(',', commaSep1($.primary_expression))
+	// 		)
+	//     )),
+	//     ']'
+	// ),
 
 
-	_sage_ellipsis_expr: $ => prec.left(PREC.sage,
-	    seq(field('start', $.primary_expression),
-		'..',
-		optional(field('stop', $.primary_expression)),
-	       )),
+	// _sage_ellipsis_expr: $ => prec.right(PREC.sage,
+	//     seq(field('start', $.primary_expression),
+	// 	'..',
+	// 	optional(field('stop', $.primary_expression)),
+	//        )),
 	
 	set: $ => seq(
 	    '{',
@@ -1083,7 +1084,7 @@ module.exports = grammar({
 
 	tuple: $ => seq(
 	    '(',
-	    optional($._collection_elements),
+	    optional($._sage_collection_elements),
 	    ')',
 	),
 
@@ -1148,7 +1149,19 @@ module.exports = grammar({
 	    )),
 	    optional(','),
 	),
-
+	_sage_collection_elements: $ => seq(
+	    commaSep1(choice(
+		$.sage_ellipsis_expr, $.expression, $.yield, $.list_splat, $.parenthesized_list_splat,
+	    )),
+	    optional(','),
+	),
+	// NB: makes [1...3] parse as 1..(float .3) - logically I think this makes sense
+	sage_ellipsis_expr: $ => prec.right(PREC.sage, seq(
+	    field('start', $.expression), choice(',..','..',',..,'),
+	    optional(field('stop', $.expression))
+	)
+	),
+	
 	for_in_clause: $ => prec.left(seq(
 	    optional('async'),
 	    'for',
