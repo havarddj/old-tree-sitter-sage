@@ -302,6 +302,10 @@
         "named": true
       },
       {
+        "type": "sage_expression",
+        "named": true
+      },
+      {
         "type": "set",
         "named": true
       },
@@ -2706,6 +2710,97 @@
     }
   },
   {
+    "type": "sage_ellipsis_iter",
+    "named": true,
+    "fields": {
+      "start": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "primary_expression",
+            "named": true
+          }
+        ]
+      },
+      "stop": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "primary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "primary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "sage_ellipsis_range",
+    "named": true,
+    "fields": {
+      "start": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "primary_expression",
+            "named": true
+          }
+        ]
+      },
+      "stop": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "primary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "primary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "sage_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "sage_ellipsis_iter",
+          "named": true
+        },
+        {
+          "type": "sage_ellipsis_range",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "sage_gen_assignment",
     "named": true,
     "fields": {
@@ -2749,6 +2844,20 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "other_args": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ",",
+            "named": false
+          },
           {
             "type": "identifier",
             "named": true
@@ -3552,6 +3661,10 @@
   },
   {
     "type": ".",
+    "named": false
+  },
+  {
+    "type": "..",
     "named": false
   },
   {

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <wctype.h>
 
 enum TokenType {
     NEWLINE,
@@ -19,6 +20,8 @@ enum TokenType {
     CLOSE_BRACKET,
     CLOSE_BRACE,
     EXCEPT,
+    FLOAT,
+    /* SAGE_ELLIPSIS_LIST, */
 };
 
 typedef enum {
@@ -30,6 +33,7 @@ typedef enum {
     Triple = 1 << 5,
     Bytes = 1 << 6,
 } Flags;
+
 
 typedef struct {
     char flags;
@@ -91,6 +95,105 @@ typedef struct {
 static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
 static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
+
+/* stolen from https://github.com/tree-sitter/tree-sitter-rust/blob/master/src/scanner.c
+ */
+
+static inline bool is_num_char(int32_t c) { return c == '_' || iswdigit(c); }
+
+static inline bool process_float_literal(TSLexer *lexer) {
+    lexer->result_symbol = FLOAT;
+
+    /* advance(lexer); */
+    while (is_num_char(lexer->lookahead)) {
+        advance(lexer);
+    }
+
+    bool has_fraction = false, has_exponent = false;
+
+    if (lexer->lookahead == '.') {
+      has_fraction = true;
+      advance(lexer);
+      if (iswalpha(lexer->lookahead)
+	  && lexer->lookahead != 'e'
+	  && lexer->lookahead != 'E'
+	  && lexer->lookahead != 'j'
+	  && lexer->lookahead != 'J'
+	  ) {
+	// The dot is followed by a letter: 1.max(2) => not a float but an integer
+	// but 1.e10 and 1.j is okay!
+
+	  return false;
+	}
+      
+
+      if (lexer->lookahead == '.') {
+	return false;
+      }
+
+      while (is_num_char(lexer->lookahead)) {
+	advance(lexer);
+      }
+    }
+    lexer->mark_end(lexer);
+
+    if (lexer->lookahead == 'e' || lexer->lookahead == 'E') {
+      has_exponent = true;
+      advance(lexer);
+      if (lexer->lookahead == '+' || lexer->lookahead == '-') {
+	advance(lexer);
+      }
+      if (!is_num_char(lexer->lookahead)) {
+	return true;
+      }
+      advance(lexer);
+      while (is_num_char(lexer->lookahead)) {
+	advance(lexer);
+      }
+
+      lexer->mark_end(lexer);
+    }
+    
+    if (!has_exponent && !has_fraction) {
+        return false;
+    }
+
+    if (lexer->lookahead == 'j' || lexer->lookahead == 'J' || lexer->lookahead == 'r')
+      {
+      advance(lexer);
+
+      lexer->mark_end(lexer);
+
+      if (!iswdigit(lexer->lookahead)){
+	return true;
+      }
+
+    }
+    return true;
+    
+    /* advance(lexer); */
+
+    
+    advance(lexer);
+
+    if (!iswdigit(lexer->lookahead)) {
+        return true;
+    }
+
+    while (iswdigit(lexer->lookahead)) {
+        advance(lexer);
+    }
+
+    lexer->mark_end(lexer);
+    return true;
+}
+
+/* static inline bool process_sage_ellipsis_list(TSLexer *lexer) { */
+/*     lexer->result_symbol = SAGE_ELLIPSIS_LIST; */
+/*     bool found_dotdot = false; */
+    
+/* } */
+
 
 bool tree_sitter_sage_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
     Scanner *scanner = (Scanner *)payload;
@@ -356,6 +459,13 @@ bool tree_sitter_sage_external_scanner_scan(void *payload, TSLexer *lexer, const
             return false;
         }
     }
+
+    if (valid_symbols[FLOAT] && (iswdigit(lexer->lookahead) || lexer->lookahead == '.')) {
+      return process_float_literal(lexer);
+    }
+    /* if (valid_symbols[SAGE_ELLIPSIS_LIST] && lexer->lookahead == '[') { */
+    /*   return process_sage_ellipsis_list(lexer); */
+    /* } */
 
     return false;
 }

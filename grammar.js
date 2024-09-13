@@ -57,9 +57,13 @@ module.exports = grammar({
 	[$.named_expression, $.as_pattern],
 	[$.print_statement, $.primary_expression],
 	[$.type_alias_statement, $.primary_expression],
-        [$._sage_symb_assign_lhs, $.primary_expression],
-        // [$.sage_symb_assignment, $.primary_expression],
 	[$.match_statement, $.primary_expression],
+	[$.expression, $.sage_ellipsis_range],
+	[$.expression, $.sage_ellipsis_iter],
+        [$._sage_symb_assign_lhs, $.primary_expression],
+	[$.sage_ellipsis_range, $.sage_ellipsis_range],
+	[$.sage_ellipsis_iter, $.sage_ellipsis_iter],
+
     ],
 
     supertypes: $ => [
@@ -94,6 +98,8 @@ module.exports = grammar({
 	')',
 	'}',
 	'except',
+	$.float,
+
     ],
 
     inline: $ => [
@@ -145,13 +151,14 @@ module.exports = grammar({
 	),
         
 	// Sage statements
-        // sage_statement: $ => choice(
-        //     $.sage_expression,
-        //     $._sage_assignment,
-        // ),
-        sage_statement: $ => $._sage_assignment,
+        sage_statement: $ => choice(
+            $._sage_assignment,
+        ),
 
-        // sage_expression: $ => $.expression,
+        sage_expression: $ => prec(PREC.sage, choice(
+	    $.sage_ellipsis_iter,
+	    $.sage_ellipsis_range,
+	)),
         
 	_sage_assignment: $ => choice(
 	    $.sage_symb_assignment,
@@ -698,7 +705,7 @@ module.exports = grammar({
 	    optional($._patterns),
 	    ']',
 	),
-
+	
 	default_parameter: $ => seq(
 	    field('name', choice($.identifier, $.tuple_pattern)),
 	    '=',
@@ -775,6 +782,7 @@ module.exports = grammar({
 	    $.parenthesized_expression,
 	    $.generator_expression,
 	    $.ellipsis,
+	    $.sage_expression,
 	    alias($.list_splat_pattern, $.list_splat),
 	),
 
@@ -899,6 +907,7 @@ module.exports = grammar({
         // ),
         
 	// sage assignments of the form F.<x> = FunctionName()
+	// DONE: make sure that F.<b>, f, g = S.field_extension() also works
 	sage_gen_assignment: $ => seq(
 	    field('left', $._sage_gen_assign_lhs),
 	    '=',
@@ -911,7 +920,12 @@ module.exports = grammar({
 	    field('name', $.identifier),
             '.<',
             field('gens', commaSep1($.identifier)),
-            '>'
+            '>',
+	    optional(seq(
+		',',
+		field('other_args',
+		      commaSep1($.identifier)))
+		    )
 	),
 
 	
@@ -1032,6 +1046,35 @@ module.exports = grammar({
 	    ']',
 	),
 
+	sage_ellipsis_iter: $ => seq(
+	    '(',
+	    optional(seq(commaSep1($.primary_expression), ',')),
+	    commaSep1(seq(
+		$._sage_ellipsis_expr,
+		optional(seq(',', commaSep1($.primary_expression))
+			)
+	    )),
+	    ')'
+	),
+
+	sage_ellipsis_range: $ => seq(
+	    '[',
+	    optional(seq(commaSep1($.primary_expression), ',')),
+	    commaSep1(seq(
+		$._sage_ellipsis_expr,
+		optional(seq(',', commaSep1($.primary_expression))
+			)
+	    )),
+	    ']'
+	),
+
+
+	_sage_ellipsis_expr: $ => prec.left(PREC.sage,
+	    seq(field('start', $.primary_expression),
+		'..',
+		optional(field('stop', $.primary_expression)),
+	       )),
+	
 	set: $ => seq(
 	    '{',
 	    $._collection_elements,
@@ -1215,21 +1258,22 @@ module.exports = grammar({
 	    ),
 	)),
 
-	float: _ => {
-	    const digits = repeat1(/[0-9]+_?/);
-	    const exponent = seq(/[eE][\+-]?/, digits);
 
-	    return token(seq(
-		choice(
-		    seq(digits, '.', optional(digits), optional(exponent)),
-		    seq(optional(digits), '.', digits, optional(exponent)),
-		    seq(digits, exponent),
-		),
-		optional(/[jJ]/),
-		optional(/[r]/), // python numbers
+	// float: _ => {
+	//     const digits = repeat1(/[0-9]+_?/);
+	//     const exponent = seq(/[eE][\+-]?/, digits);
 
-	    ));
-	},
+	//     return token(seq(
+	// 	choice(
+	// 	    seq(digits, '.', optional(digits), optional(exponent)),
+	// 	    seq(optional(digits), '.', digits, optional(exponent)),
+	// 	    seq(digits, exponent),
+	// 	),
+	// 	optional(/[jJ]/),
+	// 	optional(/[r]/), // python numbers
+
+	//     ));
+	// },
 
 	identifier: _ => /[_\p{XID_Start}][_\p{XID_Continue}]*/,
 
