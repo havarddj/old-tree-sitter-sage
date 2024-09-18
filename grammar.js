@@ -1,9 +1,7 @@
 /**
- * @file Python grammar for tree-sitter
- * @author Max Brunsfeld <maxbrunsfeld@gmail.com>
+ * @file Sage grammar for tree-sitter
+ * @author Håvard Damm-Johnsen <havard-dj@hotmail.com>
  * @license MIT
- * @see {@link https://docs.python.org/2/reference/grammar.html|Python 2 grammar}
- * @see {@link https://docs.python.org/3/reference/grammar.html|Python 3 grammar}
  */
 
 /* eslint-disable arrow-parens */
@@ -895,7 +893,7 @@ module.exports = grammar({
         
 	_sage_symb_assign_lhs: $ => seq(
             field('name', $.identifier),
-            '(', field('params', commaSep1($.identifier)), ')' 
+            '(', commaSep1(field('param', $.identifier)), ')' 
 	),
         
         // sage_symb_assignment: $ => seq(
@@ -910,7 +908,7 @@ module.exports = grammar({
 	// sage assignments of the form F.<x> = FunctionName()
 	// DONE: make sure that F.<b>, f, g = S.field_extension() also works
 	sage_gen_assignment: $ => seq(
-	    field('left', $._sage_gen_assign_lhs),
+	    $._sage_gen_assign_lhs,
 	    '=',
             field('right', $.call),
 	),
@@ -920,7 +918,7 @@ module.exports = grammar({
         _sage_gen_assign_lhs: $ => seq(
 	    field('name', $.identifier),
             '.<',
-            field('gens', commaSep1($.identifier)),
+            commaSep1(field('gen', $.identifier)),
             '>',
 	    optional(seq(
 		',',
@@ -977,11 +975,11 @@ module.exports = grammar({
 		optional($._expressions),
 	    ),
 	)),
-
+	// Allow G.1 type syntax
 	attribute: $ => prec(PREC.call, seq(
 	    field('object', $.primary_expression),
 	    '.',
-	    field('attribute', $.identifier),
+	    field('attribute', choice($.identifier,$.integer)),
 	)),
 
 	subscript: $ => prec(PREC.call, seq(

@@ -508,6 +508,10 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "integer",
+            "named": true
           }
         ]
       },
@@ -2739,36 +2743,10 @@
     "type": "sage_gen_assignment",
     "named": true,
     "fields": {
-      "gens": {
+      "gen": {
         "multiple": true,
         "required": true,
         "types": [
-          {
-            "type": ",",
-            "named": false
-          },
-          {
-            "type": "identifier",
-            "named": true
-          }
-        ]
-      },
-      "left": {
-        "multiple": true,
-        "required": true,
-        "types": [
-          {
-            "type": ",",
-            "named": false
-          },
-          {
-            "type": ".<",
-            "named": false
-          },
-          {
-            "type": ">",
-            "named": false
-          },
           {
             "type": "identifier",
             "named": true
@@ -2866,14 +2844,10 @@
           }
         ]
       },
-      "params": {
+      "param": {
         "multiple": true,
         "required": true,
         "types": [
-          {
-            "type": ",",
-            "named": false
-          },
           {
             "type": "identifier",
             "named": true
